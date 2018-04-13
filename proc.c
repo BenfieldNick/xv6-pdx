@@ -56,7 +56,6 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   release(&ptable.lock);
-
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
@@ -77,7 +76,7 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
-
+  p->start_ticks = ticks;
   return p;
 }
 
@@ -506,7 +505,7 @@ procdump(void)
   struct proc *p;
   char *state;
   uint pc[10];
-
+  cprintf("\nPID     State   Name    Elapsed  PCs\n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -514,7 +513,19 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+
+    int elapsed_time_ms = ticks - p->start_ticks;
+    int elapsed_time_s = elapsed_time_ms/1000;
+    elapsed_time_ms = elapsed_time_ms % 1000;
+    char* zeros = "";
+    if(elapsed_time_ms < 100 && elapsed_time_ms >= 10){
+      zeros = "0";
+    }
+    if(elapsed_time_ms < 10){
+      zeros = "00";
+    }
+    cprintf("%d\t%s\t%s\t%d.%s%d\t", p->pid, state, p->name,elapsed_time_s,
+                                                     zeros,elapsed_time_ms);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
