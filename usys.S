@@ -30,5 +30,11 @@ SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
 SYSCALL(halt)
-// My added system calls
+// My added system calls P1
 SYSCALL(date)
+// My added system calls P2
+SYSCALL(setuid)
+SYSCALL(setgid)
+SYSCALL(getppid)
+SYSCALL(getuid)
+SYSCALL(getgid)

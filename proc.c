@@ -76,7 +76,9 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+  #ifdef CS333_P1
   p->start_ticks = ticks;
+  #endif
   return p;
 }
 
@@ -105,7 +107,11 @@ userinit(void)
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
-
+  #ifdef CS333_P2
+  p->parent = p;
+  p->uid = DEFAULT_UID;
+  p->gid = DEFAULT_GID;
+  #endif
   p->state = RUNNABLE;
 }
 
@@ -152,6 +158,10 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
+  #ifdef CS333_P2
+  np->uid = proc->uid;
+  np->gid = proc->gid;
+  #endif
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -164,7 +174,7 @@ fork(void)
   safestrcpy(np->name, proc->name, sizeof(proc->name));
 
   pid = np->pid;
-
+  
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
   np->state = RUNNABLE;
@@ -498,15 +508,11 @@ static char *states[] = {
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
 // No lock to avoid wedging a stuck machine further.
-void
-procdump(void)
-{
-  int i;
-  struct proc *p;
-  char *state;
-  uint pc[10];
-  cprintf("\nPID     State   Name    Elapsed  PCs\n");
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+#ifdef CS333_P3
+static void
+procdumpP3P4(struct proc* p, char* state){
+  cprintf("Not Implemented");
+  /*for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
     if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
@@ -531,6 +537,95 @@ procdump(void)
       for(i=0; i<10 && pc[i] != 0; i++)
         cprintf(" %p", pc[i]);
     }
+    cprintf("\n");
+  }*/
+
+}
+#endif
+
+#if defined(CS333_P2) && !defined(CS333_P3)
+static void
+procdumpP2(struct proc* p, char* state){ 
+  int elapsed_time_ms = ticks - p->start_ticks;
+  int elapsed_time_s = elapsed_time_ms/1000;
+  elapsed_time_ms = elapsed_time_ms % 1000;
+  char* zeros = "";
+  if(elapsed_time_ms < 100 && elapsed_time_ms >= 10){
+    zeros = "0";
+  }
+  if(elapsed_time_ms < 10){
+    zeros = "00";
+  }
+  cprintf("%d\t%s\t%d\t%d\t%d\t%s\t%d.%s%d\t", p->pid, p->name,p->uid,p->gid,p->parent->pid,
+                                               state,elapsed_time_s,zeros,elapsed_time_ms);
+}
+
+#endif
+
+#if defined(CS333_P1) && !defined(CS333_P2)
+static void
+procdumpP1(struct proc* p, char *state){
+  int elapsed_time_ms = ticks - p->start_ticks;
+  int elapsed_time_s = elapsed_time_ms/1000;
+  elapsed_time_ms = elapsed_time_ms % 1000;
+  char* zeros = "";
+  if(elapsed_time_ms < 100 && elapsed_time_ms >= 10){
+    zeros = "0";
+  }
+  if(elapsed_time_ms < 10){
+    zeros = "00";
+  }
+  cprintf("%d\t%s\t%s\t%d.%s%d\t", p->pid, p->name,state,elapsed_time_s,
+                                                     zeros,elapsed_time_ms);
+
+}
+#endif
+
+//Code courtesy of Mark Morrissey
+void
+procdump(void)
+{
+  int i;
+  struct proc *p;
+  char *state;
+  uint pc[10];
+
+#if defined(CS333_P3P4)
+#define HEADER "\nPID\tName\tUID\tGID\tPPID\tPrio\tElapsed\tCPU\tState\tSize\t PCs\n"
+#elif defined(CS333_P2)
+#define HEADER "\nPID\tName\tUID\tGID\tPPID\tState\tElapsed\t PCs\n"
+#elif defined(CS333_P1)
+#define HEADER "\nPID\tName\tState\tElapsed\t PCs\n"
+#else
+#define HEADER ""
+#endif
+
+  cprintf(HEADER);
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state == UNUSED)
+      continue;
+    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+      state = states[p->state];
+    else
+      state = "???";
+
+#if defined(CS333_P3P4) 
+    procdumpP3P4(p, state);  
+#elif defined(CS333_P2)
+    procdumpP2(p, state); 
+#elif defined(CS333_P1)
+    procdumpP1(p, state);
+#else
+    cprintf("%d %s %s", p->pid, state, p->name);
+#endif
+
+    if(p->state == SLEEPING){
+      getcallerpcs((uint*)p->context->ebp+2, pc);
+      for(i=0; i<10 && pc[i] != 0; i++)
+        cprintf(" %p", pc[i]);
+    }
+
     cprintf("\n");
   }
 }
