@@ -79,6 +79,10 @@ found:
   #ifdef CS333_P1
   p->start_ticks = ticks;
   #endif
+  #ifdef CS333_P2
+  p->cpu_ticks_total = 0;
+  p->cpu_ticks_in = ticks;
+  #endif
   return p;
 }
 
@@ -322,6 +326,9 @@ scheduler(void)
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      #ifdef CS333_P2
+      p->cpu_ticks_in = ticks;
+      #endif
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 
@@ -362,6 +369,9 @@ sched(void)
   if(readeflags()&FL_IF)
     panic("sched interruptible");
   intena = cpu->intena;
+  #ifdef CS333_P2
+  proc->cpu_ticks_total += ticks - proc->cpu_ticks_in;
+  #endif
   swtch(&proc->context, cpu->scheduler);
   cpu->intena = intena;
 }
@@ -556,8 +566,18 @@ procdumpP2(struct proc* p, char* state){
   if(elapsed_time_ms < 10){
     zeros = "00";
   }
-  cprintf("%d\t%s\t%d\t%d\t%d\t%s\t%d.%s%d\t", p->pid, p->name,p->uid,p->gid,p->parent->pid,
-                                               state,elapsed_time_s,zeros,elapsed_time_ms);
+  int cpu_sec = p->cpu_ticks_total / 1000;
+  int cpu_ms  = p->cpu_ticks_total % 1000;
+  char* cpu_zeros = "";
+  if(cpu_ms < 100 && cpu_ms >= 10){
+    cpu_zeros = "0";
+  }
+  if(cpu_ms < 10){
+    cpu_zeros = "00";
+  }  
+
+  cprintf("%d\t%s\t%d\t%d\t%d\t%s\t%d.%s%d\t%d.%s%d\t", p->pid, p->name,p->uid,p->gid,p->parent->pid,
+                                               state,elapsed_time_s,zeros,elapsed_time_ms,cpu_sec,cpu_zeros,cpu_ms);
 }
 
 #endif
@@ -593,7 +613,7 @@ procdump(void)
 #if defined(CS333_P3P4)
 #define HEADER "\nPID\tName\tUID\tGID\tPPID\tPrio\tElapsed\tCPU\tState\tSize\t PCs\n"
 #elif defined(CS333_P2)
-#define HEADER "\nPID\tName\tUID\tGID\tPPID\tState\tElapsed\t PCs\n"
+#define HEADER "\nPID\tName\tUID\tGID\tPPID\tState\tElapsed\tCPU\t PCs\n"
 #elif defined(CS333_P1)
 #define HEADER "\nPID\tName\tState\tElapsed\t PCs\n"
 #else
