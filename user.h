@@ -1,10 +1,10 @@
 #ifdef CS333_P2
 #include "types.h"
+#include "uproc.h"
 #endif
 
 struct stat;
 struct rtcdate;
-
 // system calls
 int fork(void);
 int exit(void) __attribute__((noreturn));
@@ -39,7 +39,11 @@ uint getppid(void);
 
 int setuid(uint);
 int setgid(uint);
+
+int getprocs(uint max, struct uproc* table);
 #endif
+
+
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

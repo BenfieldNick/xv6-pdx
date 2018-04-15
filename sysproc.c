@@ -6,7 +6,9 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-
+#ifdef CS333_P2
+#include "uproc.h"
+#endif
 int
 sys_fork(void)
 {
@@ -148,4 +150,20 @@ sys_setgid(void){
   return 0;
 }
 
+int
+sys_getprocs(void){
+  uint max;
+  struct uproc* table;
+  if(argint(0,(int *)&max) < 0){
+    return -1;
+  }
+  if(max != 1 && max != 16 && max != 64 && max != 72){
+    return -1;
+  }
+  if(argptr(1, (void*)&table, sizeof(struct uproc)) < 0){
+    return -1;
+  }
+  int num_procs = getprocs(max,table);
+  return num_procs;
+}
 #endif

@@ -6,7 +6,9 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-
+#ifdef CS333_P2
+#include "uproc.h"
+#endif
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -650,7 +652,33 @@ procdump(void)
   }
 }
 
-
+#ifdef CS333_P2
+int
+getprocs(uint max, struct uproc* table){
+  struct proc* p;
+  int num_proc = 0;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(num_proc == max)
+      break;
+    if(p->state == UNUSED||p->state == EMBRYO)
+      continue;
+    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+      safestrcpy(table[num_proc].state, states[p->state],STRMAX);
+    else
+      safestrcpy(table[num_proc].state,"???",STRMAX);
+    table[num_proc].pid = p->pid;
+    table[num_proc].uid = p->uid;
+    table[num_proc].gid = p->gid;
+    table[num_proc].ppid = p->parent->pid;
+    table[num_proc].elapsed_ticks = ticks - p->start_ticks;
+    table[num_proc].CPU_total_ticks = p->cpu_ticks_total;
+    table[num_proc].size = p->sz;
+    safestrcpy(table[num_proc].name,p->name,STRMAX);
+    num_proc++;
+  }
+  return num_proc;
+}
+#endif
 #ifdef CS333_P3P4
 static int
 stateListAdd(struct proc** head, struct proc** tail, struct proc* p)
