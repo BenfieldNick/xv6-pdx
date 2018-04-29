@@ -190,7 +190,12 @@ void
 consoleintr(int (*getc)(void))
 {
   int c, doprocdump = 0;
-
+  #ifdef CS333_P3P4
+  int doreadydump = 0;
+  int dofreedump = 0;
+  int dosleepdump = 0;
+  int dozombiedump = 0;
+  #endif
   acquire(&cons.lock);
   while((c = getc()) >= 0){
     switch(c){
@@ -210,6 +215,20 @@ consoleintr(int (*getc)(void))
         consputc(BACKSPACE);
       }
       break;
+    #ifdef CS333_P3P4
+    case C('R'):
+      doreadydump = 1;
+      break;
+    case C('F'):
+      dofreedump = 1;
+      break;
+    case C('S'):
+      dosleepdump = 1;
+      break;
+    case C('Z'):
+      dozombiedump = 1;
+      break;
+    #endif
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
@@ -227,6 +246,20 @@ consoleintr(int (*getc)(void))
   if(doprocdump) {
     procdump();  // now call procdump() wo. cons.lock held
   }
+  #ifdef CS333_P3P4
+  if(doreadydump) { 
+    readydump();
+  }
+  if(dofreedump) { 
+    freedump();
+  }
+  if(dosleepdump) {
+    sleepdump();
+  }
+  if(dozombiedump) { 
+    zombiedump();
+  }
+  #endif
 }
 
 int
