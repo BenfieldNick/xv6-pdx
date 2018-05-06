@@ -343,14 +343,6 @@ exit(void)
   // Parent might be sleeping in wait().
   wakeup1(proc->parent);
 
-  // Pass abandoned children to init.
-  //for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-  //  if(p->parent == proc){
-  //    p->parent = initproc;
-  //    if(p->state == ZOMBIE)
-  //      wakeup1(initproc);
-  //  }
-  //}
   for(p=ptable.pLists.ready;p;p=p->next){
     if(p->parent == proc)
       p->parent = initproc;
@@ -366,10 +358,10 @@ exit(void)
   for(p=ptable.pLists.zombie;p;p=p->next){
     if(p->parent == proc){
       p->parent = initproc;
-      if(p->state == ZOMBIE)
-        wakeup1(initproc);
+      wakeup1(initproc);
     }
   }
+
   // Jump into the scheduler, never to return.
   stateListRemove(&ptable.pLists.running,&ptable.pLists.runningTail,proc);
   assertState(proc->state,RUNNING);
@@ -433,7 +425,6 @@ wait(void)
 
   acquire(&ptable.lock);
   for(;;){
-    // Scan through table looking for zombie children.
     havekids = 0;
     for(p=ptable.pLists.ready;p;p=p->next){
       if(p->parent != proc)
@@ -486,8 +477,6 @@ wait(void)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
 }
-
-
 #endif
 
 //PAGEBREAK: 42
@@ -575,7 +564,7 @@ scheduler(void)
       // It should have changed its p->state before coming back.
       proc = 0;
     }
-      release(&ptable.lock);
+    release(&ptable.lock);
     
     // if idle, wait for next interrupt
     if (idle) {
@@ -1014,7 +1003,7 @@ zombiedump(){
   struct proc *p;
   acquire(&ptable.lock);
   cprintf("Zombie List Processes:\n");
-  if(ptable.pLists.ready == 0){
+  if(ptable.pLists.zombie == 0){
     cprintf("No processes in zombie list.\n$");
     release(&ptable.lock);
     return;
