@@ -948,8 +948,9 @@ procdump(void)
 void
 readydump(void){
   struct proc *p;
-  cprintf("Ready List Processes:\n");
+ 
   acquire(&ptable.lock);
+  cprintf("Ready List Processes:\n");
   if(ptable.pLists.ready == 0){
     cprintf("No processes in ready list.\n$");
     release(&ptable.lock);
@@ -1139,10 +1140,10 @@ initFreeList(void) {
 }
 
 static void
-assertState(int curr_state, int expec_state)
+assertState(int proc_state, int expec_state)
 {
-  if(curr_state != expec_state){
-    cprintf("Current State %s\n",states[curr_state]);
+  if(proc_state != expec_state){
+    cprintf("Current State %s\n",states[proc_state]);
     cprintf("Expected State %s\n",states[expec_state]);
     panic("invalid state\n");
   }

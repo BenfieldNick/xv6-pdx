@@ -108,18 +108,18 @@ sys_date(void)
 #endif
 
 #ifdef CS333_P2
-uint
+int
 sys_getuid(void)
 {
   return proc->uid;
 }
-uint
+int
 sys_getgid(void)
 {
   return proc->gid;
 }
 
-uint
+int
 sys_getppid(void)
 {
   return proc->parent->pid;
@@ -134,7 +134,6 @@ sys_setuid(void)
   }
   uid = (uint) uid;
   if(uid < MIN_UID || uid > MAX_UID){
-    cprintf("uid out of range\n");
     return -1;
   }
   proc->uid = uid;
@@ -150,7 +149,6 @@ sys_setgid(void)
   }
   gid = (uint) gid;
   if(gid < MIN_GID || gid > MAX_GID){
-    cprintf("gid out of range\n");
     return -1;
   }
   proc->gid = gid;

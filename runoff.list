@@ -92,3 +92,8 @@ testsetuid.c
 testuidgid.c
 testSched.c
 uproc.h
+roundrobintest.c
+waittest.c
+zombietest.c
+sleeptest.c
+killtest.c
