@@ -12,8 +12,8 @@ main(void)
   struct uproc *proc = malloc(sizeof(struct uproc)*MAX);
   int num_procs = getprocs(MAX,proc);
   printf(1,"PID\tName\t\tUID\tGID\tPPID\tPrio\tElapsed\tCPU\tState\tSize\n");
-  //struct uproc curr_proc;
-  for(int i = 0; i<num_procs;i++){
+  int i;
+  for(i = 0; i<num_procs;i++){
     //curr_proc = proc[i];
     uint elapsed_time_ms = proc[i].elapsed_ticks;
     uint elapsed_time_s = elapsed_time_ms/1000;

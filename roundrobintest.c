@@ -6,7 +6,8 @@
 int
 main(){
   int pid;
-  for(int i = 0; i<NUM_PROCS; i++){
+  int i;
+  for(i = 0; i<NUM_PROCS; i++){
       pid = fork();
       if(pid < 0){
         printf(2, "Fork Error! Abort Abort\n");
