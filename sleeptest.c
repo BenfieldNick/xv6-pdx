@@ -16,16 +16,37 @@ loop(int duration){
 }
 
 int
-main(){
-  printf(1,"Running for 5 seconds.\n");
-  loop(5000);
-  printf(1,"Sleeping for 5 seconds.\n");
-  sleep(5000);
-  printf(1,"Waking up, and loop running for 5 more seconds.\n");
-  loop(5000);
-  printf(1,"Sleeping 5 more seconds.\n");
-  sleep(5000);
-  printf(1,"All done.\n");
+main(int argc, char *argv[]){
+  int procs;
+  if(argc == 1){
+    procs = 1;
+  }else{
+    procs = atoi(argv[1]);
+  }
+  int pid;
+  int i;
+  for(i = 0; i<procs; i++){
+      pid = fork();
+      if(pid < 0){
+        printf(2, "Fork Error! Abort Abort\n");
+      }
+      if(pid == 0){
+        break;
+      }
+  }
+  if(pid == 0){
+    printf(1,"Running for 5 seconds.\n");
+    loop(5000);
+    printf(1,"Sleeping for 5 seconds.\n");
+    sleep(5000);
+    printf(1,"Waking up, and loop running for 5 more seconds.\n");
+    loop(5000);
+    printf(1,"Sleeping 5 more seconds.\n");
+    sleep(5000);
+    printf(1,"All done.\n");
+    exit();
+  }
+  wait();
   exit();
 }
 

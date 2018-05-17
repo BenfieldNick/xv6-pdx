@@ -24,3 +24,11 @@
 #define MAX_GID      32767
 
 #endif
+
+#ifdef CS333_P3P4
+
+#define MAXPRIO 4
+#define BUDGET 1000
+#define TICKS_TO_PROMOTE (BUDGET * (MAXPRIO/2))
+
+#endif 

@@ -2,11 +2,11 @@
 
 #include "types.h"
 #include "user.h"
-
+#define NUM_PROCS 4
 int
 main(){
   int pid;
-  for(int i = 0; i<10; i++){
+  for(int i = 0; i<NUM_PROCS; i++){
       pid = fork();
       if(pid < 0){
         printf(2, "Fork Error! Abort Abort\n");

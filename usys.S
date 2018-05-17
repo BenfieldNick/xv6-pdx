@@ -39,3 +39,5 @@ SYSCALL(getppid)
 SYSCALL(getuid)
 SYSCALL(getgid)
 SYSCALL(getprocs)
+// My added system call P4
+SYSCALL(setpriority)

@@ -78,6 +78,8 @@ struct proc {
   
   #ifdef CS333_P3P4
   struct proc *next;       // Points to next process in the state list
+  int priority;
+  int budget;
   #endif
 
 };
