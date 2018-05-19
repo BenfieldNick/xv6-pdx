@@ -2,7 +2,7 @@
 
 #include "types.h"
 #include "user.h"
-#define NUM_PROCS 4
+#define NUM_PROCS 7
 int
 main(){
   int pid;

@@ -1023,11 +1023,6 @@ readydump(void){
  
   acquire(&ptable.lock);
   cprintf("Ready List Processes:\n");
-//  if(ptable.pLists.ready == 0){
-//    cprintf("No processes in ready list.\n$");
-//    release(&ptable.lock);
-//    return;
-//  }
   int found = 0;
   int i;
   for(i=0;i<MAXPRIO+1;i++){
@@ -1241,12 +1236,12 @@ assertState(int proc_state, int expec_state)
     panic("invalid state\n");
   }
 }
-
 int
 setpriority(int pid, int priority)
 {
   acquire(&ptable.lock);
   struct proc * p;
+  int onReadyList = 0;
   for(p=ptable.pLists.sleep;p;p=p->next)
   {
     if(p->pid == pid) goto found;
@@ -1259,15 +1254,25 @@ setpriority(int pid, int priority)
   int i;
   for(i=0;i<MAXPRIO+1;i++){
     for(p=ptable.pLists.ready[i];p;p=p->next){
-      if(p->pid == pid) goto found;
+      if(p->pid == pid){
+        onReadyList = 1;
+        goto found;
+      }
     }
   }
+  release(&ptable.lock);
   return -1;
   
   found:
-    p->priority = priority;
-    p->budget = BUDGET;
-    release(&ptable.lock);
+    if(onReadyList){
+      stateListRemove(&ptable.pLists.ready[p->priority],&ptable.pLists.readyTail[p->priority],p);
+      p->priority = priority;
+      stateListAdd(&ptable.pLists.ready[p->priority],&ptable.pLists.readyTail[p->priority],p);
+    }else{
+      p->priority = priority;
+    }
+  p->budget = BUDGET;
+  release(&ptable.lock);
   return 0;
 }
 #endif
