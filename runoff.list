@@ -97,3 +97,4 @@ waittest.c
 zombietest.c
 sleeptest.c
 killtest.c
+setpriority.c
