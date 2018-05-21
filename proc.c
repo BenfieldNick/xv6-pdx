@@ -551,6 +551,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *next;
   int idle;  // for checking if processor is idle
   int i;
   
@@ -562,16 +563,20 @@ scheduler(void)
     
     acquire(&ptable.lock);
     //Periodic Priority Adjustment
-    if(ticks >= ptable.PromoteAtTime){
+    if(ticks >= ptable.PromoteAtTime && MAXPRIO){
       for(i=0;i<MAXPRIO+1;i++){
-        for(p=ptable.pLists.ready[i];p;p=p->next){
-          if(i==0){  //Do not promote when at prio 0, only reset budget
+        p = ptable.pLists.ready[i];
+        while(p){
+          if(i==0){
             p->budget = BUDGET;
+            p = p->next;
           }else{
+            next = p->next;
             stateListRemove(&ptable.pLists.ready[p->priority], &ptable.pLists.readyTail[p->priority], p);
             p->priority -= 1;
             stateListAdd(&ptable.pLists.ready[p->priority], &ptable.pLists.readyTail[p->priority], p);
             p->budget = BUDGET;
+            p = next;
           }
         }
       }
@@ -663,13 +668,15 @@ yield(void)
   stateListAdd(&ptable.pLists.ready[proc->priority],&ptable.pLists.readyTail[proc->priority],proc);
   #endif
   #ifdef CS333_P3P4
-  proc->budget -= (ticks - proc->cpu_ticks_in);
-  if((proc->budget <= 0) && (proc->priority != MAXPRIO)){
-    stateListRemove(&ptable.pLists.ready[proc->priority],&ptable.pLists.readyTail[proc->priority],proc); 
-    assertState(proc->state,RUNNABLE);
-    proc->priority += 1;
-    stateListAdd(&ptable.pLists.ready[proc->priority],&ptable.pLists.readyTail[proc->priority],proc);
-    proc->budget = BUDGET;
+  if(MAXPRIO){
+    proc->budget -= (ticks - proc->cpu_ticks_in);
+    if((proc->budget <= 0) && (proc->priority != MAXPRIO)){
+      stateListRemove(&ptable.pLists.ready[proc->priority],&ptable.pLists.readyTail[proc->priority],proc); 
+      assertState(proc->state,RUNNABLE);
+      proc->priority += 1;
+      stateListAdd(&ptable.pLists.ready[proc->priority],&ptable.pLists.readyTail[proc->priority],proc);
+      proc->budget = BUDGET;
+    }
   }
   #endif
 
@@ -725,10 +732,12 @@ sleep(void *chan, struct spinlock *lk)
   stateListRemove(&ptable.pLists.running,&ptable.pLists.runningTail,proc);
   assertState(proc->state,RUNNING);
 
-  proc->budget -= (ticks - proc->cpu_ticks_in);
-  if((proc->budget <= 0) && (proc->priority != MAXPRIO)){
-    proc->priority += 1;
-    proc->budget = BUDGET;
+  if(MAXPRIO){
+    proc->budget -= (ticks - proc->cpu_ticks_in);
+    if((proc->budget <= 0) && (proc->priority != MAXPRIO)){
+      proc->priority += 1;
+      proc->budget = BUDGET;
+    }
   }
 
   #endif
@@ -766,16 +775,20 @@ static void
 wakeup1(void *chan)
 {
   struct proc *p;
-
-  for(p=ptable.pLists.sleep; p; p=p->next){
+  struct proc *next;
+  p = ptable.pLists.sleep;
+  while(p){
+    next = p->next;
     if(p->chan == chan){
-      stateListRemove(&ptable.pLists.sleep, &ptable.pLists.sleepTail,p);
+      stateListRemove(&ptable.pLists.sleep,&ptable.pLists.sleepTail,p);
       assertState(p->state, SLEEPING);
       p->state = RUNNABLE;
       stateListAdd(&ptable.pLists.ready[p->priority], &ptable.pLists.readyTail[p->priority],p);
     }
+    p = next;
   }
 }
+
 #endif
 
 // Wake up all processes sleeping on chan.

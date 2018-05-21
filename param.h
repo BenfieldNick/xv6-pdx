@@ -27,8 +27,8 @@
 
 #ifdef CS333_P3P4
 
-#define MAXPRIO 4
-#define BUDGET 1000
-#define TICKS_TO_PROMOTE (BUDGET * (MAXPRIO/2))
-
+#define MAXPRIO 0
+#define BUDGET 100
+//#define TICKS_TO_PROMOTE (BUDGET * (MAXPRIO/2))
+#define TICKS_TO_PROMOTE 100000
 #endif 
