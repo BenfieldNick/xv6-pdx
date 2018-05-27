@@ -209,6 +209,11 @@ iupdate(struct inode *ip)
   dip->minor = ip->minor;
   dip->nlink = ip->nlink;
   dip->size = ip->size;
+  #ifdef CS333_P5
+  dip->uid = ip->uid;
+  dip->gid = ip->gid;
+  dip->mode = ip->mode;
+  #endif
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
   log_write(bp);
   brelse(bp);
@@ -245,6 +250,11 @@ iget(uint dev, uint inum)
   ip->inum = inum;
   ip->ref = 1;
   ip->flags = 0;
+  #ifdef CS333_P5
+  ip->uid = DEFAULT_UID;
+  ip->gid = DEFAULT_GID;
+  ip->mode.asInt = DEFAULT_MODE;
+  #endif
   release(&icache.lock);
 
   return ip;
@@ -427,6 +437,11 @@ stati(struct inode *ip, struct stat *st)
   st->type = ip->type;
   st->nlink = ip->nlink;
   st->size = ip->size;
+  #ifdef CS333_P5
+  st->uid = ip->uid;
+  st->gid = ip->gid;
+  st->mode.asInt = ip->mode.asInt;
+  #endif
 }
 
 //PAGEBREAK!

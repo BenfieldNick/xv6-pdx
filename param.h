@@ -15,6 +15,9 @@
 
 #ifdef CS333_P2
 
+// DEFAULT_UID and DEFAULT_GID are the default values for both
+// the first process and files created by mkfs when the file system
+// is created.
 #define DEFAULT_UID  0
 #define DEFAULT_GID  0
 
@@ -32,3 +35,7 @@
 //#define TICKS_TO_PROMOTE (BUDGET * (MAXPRIO/2))
 #define TICKS_TO_PROMOTE 100000
 #endif 
+
+#ifdef CS333_P5
+#define DEFAULT_MODE 00755
+#endif

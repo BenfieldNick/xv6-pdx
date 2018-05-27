@@ -24,6 +24,20 @@ exec(char *path, char **argv)
     return -1;
   }
   ilock(ip);
+  // #ifdef CS333_P5
+  // // check permissions
+  // if(proc->uid == ip->uid){  // Check User Permissions
+  //   if(!ip->u_x)
+  //     goto bad;
+  // }else if(proc->gid == ip->gid){  // Check Group Permissions
+  //   if(!ip->g_w)
+  //     goto bad;
+  // }else{  // Check other permissions
+  //   if(!ip->o_w)
+  //     goto bad;
+  // }
+  // #endif
+
   pgdir = 0;
 
   // Check ELF header

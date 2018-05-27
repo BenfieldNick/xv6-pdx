@@ -41,3 +41,7 @@ SYSCALL(getgid)
 SYSCALL(getprocs)
 // My added system call P4
 SYSCALL(setpriority)
+// My added system call P5
+SYSCALL(chmod)
+SYSCALL(chown)
+SYSCALL(chgrp)

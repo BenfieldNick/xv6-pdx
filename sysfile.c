@@ -14,6 +14,8 @@
 #include "file.h"
 #include "fcntl.h"
 
+
+
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
 static int
@@ -440,3 +442,37 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
+
+#ifdef CS333_P5
+
+int
+sys_chmod(void)
+{
+  char* path;
+  int mode;
+  struct inode* ip;
+
+  if(argstr(0, &path) < 0 || argint(1, &mode) < 0)
+    return -1;
+
+  if ((ip = namei(path)) == 0)
+    return -1;
+
+  ip->mode.asInt = mode;
+  
+  return 0;
+}
+
+int
+sys_chown(void)
+{
+  return 0;
+}
+
+int
+sys_chgrp(void)
+{
+  return 0;
+}
+
+#endif
