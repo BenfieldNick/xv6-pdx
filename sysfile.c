@@ -458,6 +458,9 @@ sys_chmod(void)
   if ((ip = namei(path)) == 0)
     return -1;
 
+  if(mode < 00000 || mode > 00777)
+    return -1;
+
   ip->mode.asInt = mode;
   
   return 0;
@@ -466,12 +469,37 @@ sys_chmod(void)
 int
 sys_chown(void)
 {
+
+  char* path;
+  int uid;
+  struct inode* ip;
+
+  if(argstr(0, &path) < 0 || argint(1, &uid) < 0)
+    return -1;
+
+  if ((ip = namei(path)) == 0)
+    return -1;
+
+  ip->uid = (ushort)uid;
+
   return 0;
 }
 
 int
 sys_chgrp(void)
 {
+  char* path;
+  int gid;
+  struct inode* ip;
+
+  if(argstr(0, &path) < 0 || argint(1, &gid) < 0)
+    return -1;
+
+  if ((ip = namei(path)) == 0)
+    return -1;
+
+  ip->gid = (ushort)gid;
+
   return 0;
 }
 

@@ -23,13 +23,12 @@ exec(char *path, char **argv)
     end_op();
     return -1;
   }
-  ilock(ip);
   // #ifdef CS333_P5
   // // check permissions
-  // if(proc->uid == ip->uid){  // Check User Permissions
+  // if((ushort)proc->uid == ip->size){  // Check User Permissions
   //   if(!ip->u_x)
   //     goto bad;
-  // }else if(proc->gid == ip->gid){  // Check Group Permissions
+  // }else if((ushort)proc->gid == ip->gid){  // Check Group Permissions
   //   if(!ip->g_w)
   //     goto bad;
   // }else{  // Check other permissions
@@ -37,6 +36,8 @@ exec(char *path, char **argv)
   //     goto bad;
   // }
   // #endif
+  ilock(ip);
+  
 
   pgdir = 0;
 

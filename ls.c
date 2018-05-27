@@ -42,13 +42,15 @@ ls(char *path)
     close(fd);
     return;
   }
-  
+  // for the header I used spaces instead of tabs between
+  // mode and name because the column is of constant size.
+  printf(1,"mode       %s uid\tgid\tinode\tsize\n",fmtname("name"));
   switch(st.type){
   case T_FILE:
     #ifdef CS333_P5
     print_mode(&st);
     #endif
-    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+    printf(1, " %s %d\t%d\t%d\t%d\t%d\n", fmtname(path), st.uid, st.gid, st.type, st.ino, st.size);
     break;
   
   case T_DIR:
@@ -71,7 +73,7 @@ ls(char *path)
       #ifdef CS333_P5
       print_mode(&st);
       #endif
-      printf(1, " %s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+      printf(1, " %s %d\t%d\t%d\t%d\t%d\n", fmtname(buf), st.uid, st.gid, st.type, st.ino, st.size);
     }
     break;
   }
