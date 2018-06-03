@@ -458,7 +458,7 @@ sys_chmod(void)
   if ((ip = namei(path)) == 0)
     return -1;
 
-  if(mode < 00000 || mode > 00777)
+  if(mode < 00000 || mode > 01777)
     return -1;
 
   ip->mode.asInt = mode;

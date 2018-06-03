@@ -7,6 +7,10 @@
 #include "x86.h"
 #include "elf.h"
 
+#ifdef CS333_P5
+#include "stat.h"
+#endif
+
 int
 exec(char *path, char **argv)
 {
@@ -17,29 +21,41 @@ exec(char *path, char **argv)
   struct inode *ip;
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
-
+  #ifdef CS333_P5
+  struct stat ip_stat;
+  #endif
   begin_op();
   if((ip = namei(path)) == 0){
     end_op();
     return -1;
   }
-  // #ifdef CS333_P5
-  // // check permissions
-  // if((ushort)proc->uid == ip->size){  // Check User Permissions
-  //   if(!ip->u_x)
-  //     goto bad;
-  // }else if((ushort)proc->gid == ip->gid){  // Check Group Permissions
-  //   if(!ip->g_w)
-  //     goto bad;
-  // }else{  // Check other permissions
-  //   if(!ip->o_w)
-  //     goto bad;
-  // }
-  // #endif
+
   ilock(ip);
   
-
   pgdir = 0;
+
+  #ifdef CS333_P5
+  stati(ip,&ip_stat);
+  // check permissions
+  if((ushort)proc->uid == ip_stat.uid){  // Check User Permissions
+    if(!ip_stat.mode.flags.u_x)
+      goto bad;
+  }else if((ushort)proc->gid == ip_stat.gid){  // Check Group Permissions
+    if(!ip_stat.mode.flags.g_x)
+      goto bad;
+  }else{  // Check other permissions
+    if(!ip_stat.mode.flags.o_x)
+      goto bad;
+  }
+
+
+// setuid(pid, int uid)
+// proc->uid = st.uid
+  //se
+  if(ip_stat.mode.flags.setuid){
+    proc->uid = ip_stat.uid;
+  }
+  #endif
 
   // Check ELF header
   if(readi(ip, (char*)&elf, 0, sizeof(elf)) < sizeof(elf))
